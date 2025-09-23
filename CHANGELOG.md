@@ -1,5 +1,13 @@
 # figma-developer-mcp
 
+## 0.6.1
+
+### Patch Changes
+
+- [#240](https://github.com/GLips/Figma-Context-MCP/pull/240) [`2b1923d`](https://github.com/GLips/Figma-Context-MCP/commit/2b1923dcf50275a3d4daf9279265d27c6fadb2f7) Thanks [@GLips](https://github.com/GLips)! - Fix issue where importing package triggered config check.
+
+- [#239](https://github.com/GLips/Figma-Context-MCP/pull/239) [`00bad7d`](https://github.com/GLips/Figma-Context-MCP/commit/00bad7dae48a6d0cc55d78560cc691a39271f151) Thanks [@Hengkai-Ye](https://github.com/Hengkai-Ye)! - Fix: Make sure LLM provides a filename extension when calling download_figma_images
+
 ## 0.6.0
 
 ### Minor Changes
