@@ -1,5 +1,11 @@
 # figma-developer-mcp
 
+## 0.6.2
+
+### Patch Changes
+
+- [#244](https://github.com/GLips/Figma-Context-MCP/pull/244) [`8277424`](https://github.com/GLips/Figma-Context-MCP/commit/8277424205e6421a133ac38086f6eb7ac124ea65) Thanks [@GLips](https://github.com/GLips)! - Support imports without starting server or looking for env vars.
+
 ## 0.6.1
 
 ### Patch Changes
