@@ -1,5 +1,11 @@
 # figma-developer-mcp
 
+## 0.6.3
+
+### Patch Changes
+
+- [#246](https://github.com/GLips/Figma-Context-MCP/pull/246) [`7f4b585`](https://github.com/GLips/Figma-Context-MCP/commit/7f4b5859454b0567c2121ff22c69a0344680b124) Thanks [@GLips](https://github.com/GLips)! - Updates to validate user input, run HTTP server on localhost only
+
 ## 0.6.2
 
 ### Patch Changes
