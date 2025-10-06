@@ -1,5 +1,11 @@
 # figma-developer-mcp
 
+## 0.6.4
+
+### Patch Changes
+
+- [#250](https://github.com/GLips/Figma-Context-MCP/pull/250) [`9966623`](https://github.com/GLips/Figma-Context-MCP/commit/996662352cdeaa8e6d4a6f64154d6135c00a35ee) Thanks [@GLips](https://github.com/GLips)! - Collapse containers that only have vector children to better handle SVG image downloads and also make output size smaller.
+
 ## 0.6.3
 
 ### Patch Changes
