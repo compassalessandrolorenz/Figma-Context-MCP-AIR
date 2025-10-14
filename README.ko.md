@@ -6,7 +6,7 @@
 </a>
 
 <div align="center">
-  <h1>Framelink Figma MCP 서버</h1>
+  <h1>Framelink MCP for Figma 서버</h1>
   <p>
     🌐 다른 언어:
     <a href="README.md">English (영어)</a> |
@@ -68,7 +68,7 @@ Cursor가 Figma 디자인 데이터에 접근할 수 있을 때, 스크린샷을
 ```json
 {
   "mcpServers": {
-    "Framelink Figma MCP": {
+    "Framelink MCP for Figma": {
       "command": "npx",
       "args": ["-y", "figma-developer-mcp", "--figma-api-key=YOUR-KEY", "--stdio"]
     }
@@ -81,7 +81,7 @@ Cursor가 Figma 디자인 데이터에 접근할 수 있을 때, 스크린샷을
 ```json
 {
   "mcpServers": {
-    "Framelink Figma MCP": {
+    "Framelink MCP for Figma": {
       "command": "cmd",
       "args": ["/c", "npx", "-y", "figma-developer-mcp", "--figma-api-key=YOUR-KEY", "--stdio"]
     }
@@ -91,7 +91,7 @@ Cursor가 Figma 디자인 데이터에 접근할 수 있을 때, 스크린샷을
 
 또는 `env` 필드에 `FIGMA_API_KEY`와 `PORT`를 넣을 수 있습니다.
 
-Framelink Figma MCP 서버를 구성하는 방법에 대한 자세한 정보가 필요하면 [Framelink 문서](https://www.framelink.ai/docs/quickstart?utm_source=github&utm_medium=readme&utm_campaign=readme)를 참조하세요.
+Framelink MCP for Figma 서버를 구성하는 방법에 대한 자세한 정보가 필요하면 [Framelink 문서](https://www.framelink.ai/docs/quickstart?utm_source=github&utm_medium=readme&utm_campaign=readme)를 참조하세요.
 
 ## 스타 히스토리
 
@@ -99,4 +99,4 @@ Framelink Figma MCP 서버를 구성하는 방법에 대한 자세한 정보가 
 
 ## 더 알아보기
 
-Framelink Figma MCP 서버는 단순하지만 강력합니다. [Framelink](https://framelink.ai?utm_source=github&utm_medium=readme&utm_campaign=readme) 사이트에서 더 많은 정보를 얻으세요.
+Framelink MCP for Figma 서버는 단순하지만 강력합니다. [Framelink](https://framelink.ai?utm_source=github&utm_medium=readme&utm_campaign=readme) 사이트에서 더 많은 정보를 얻으세요.

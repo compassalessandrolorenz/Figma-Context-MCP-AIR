@@ -22,4 +22,5 @@ export {
   contentOnly,
   visualsOnly,
   layoutOnly,
+  collapseSvgContainers,
 } from "./extractors/index.js";

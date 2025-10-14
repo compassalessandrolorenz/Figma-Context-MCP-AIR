@@ -1,6 +1,6 @@
-# Contributing to Framelink Figma MCP Server
+# Contributing to Framelink MCP for Figma
 
-Thank you for your interest in contributing to the Framelink Figma MCP Server! This guide will help you get started with contributing to this project.
+Thank you for your interest in contributing to the Framelink MCP for Figma! This guide will help you get started with contributing to this project.
 
 ## Philosophy
 
@@ -78,7 +78,7 @@ This focused approach ensures:
 
    ```bash
    "mcpServers": {
-      "Framelink Figma MCP - Local StreamableHTTP": {
+      "Framelink MCP for Figma - Local StreamableHTTP": {
          "url": "http://localhost:3333/mcp"
       },
    }
