@@ -24,6 +24,11 @@
     "lint": "eslint .",
     "format": "prettier --write \"src/**/*.ts\"",
     "inspect": "pnpx @modelcontextprotocol/inspector",
+    "auth:figma": "tsx src/scripts/auth-figma.ts",
+    "find:token": "tsx src/scripts/find-figma-token.ts",
+    "oauth:start": "tsx src/scripts/oauth-flow.ts",
+    "test:oauth": "tsx src/scripts/test-oauth-implementation.ts",
+    "test:remote": "cross-env FIGMA_REMOTE_MCP_ENABLED=true tsx src/scripts/test-remote-connection.ts",
     "prepack": "pnpm build"
   },
   "engines": {
@@ -63,6 +68,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.33.0",
+    "@figma/code-connect": "^1.4.2",
     "@types/express": "^5.0.0",
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^25.3.3",

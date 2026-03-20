@@ -11,12 +11,10 @@ import { getServerConfig } from "./config.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 
 let httpServer: Server | null = null;
-
-type Session = {
-  transport: StreamableHTTPServerTransport | SSEServerTransport;
-  server: McpServer;
+const transports = {
+  streamable: {} as Record<string, StreamableHTTPServerTransport>,
+  sse: {} as Record<string, SSEServerTransport>,
 };
-const sessions: Record<string, Session> = {};
 
 /**
  * Start the MCP server in either stdio or HTTP mode.
@@ -24,21 +22,18 @@ const sessions: Record<string, Session> = {};
 export async function startServer(): Promise<void> {
   const config = getServerConfig();
 
-  const serverOptions = {
+  const server = await createServer(config.auth, {
     isHTTP: !config.isStdioMode,
-    outputFormat: config.outputFormat as "yaml" | "json",
+    outputFormat: config.outputFormat,
     skipImageDownloads: config.skipImageDownloads,
-    imageDir: config.imageDir,
-  };
+  });
 
   if (config.isStdioMode) {
-    const server = createServer(config.auth, serverOptions);
     const transport = new StdioServerTransport();
     await server.connect(transport);
   } else {
-    const createMcpServer = () => createServer(config.auth, serverOptions);
     console.log(`Initializing Figma MCP Server in HTTP mode on ${config.host}:${config.port}...`);
-    await startHttpServer(config.host, config.port, createMcpServer);
+    await startHttpServer(config.host, config.port, server);
 
     process.on("SIGINT", async () => {
       Logger.log("Shutting down server...");
@@ -52,7 +47,7 @@ export async function startServer(): Promise<void> {
 export async function startHttpServer(
   host: string,
   port: number,
-  createMcpServer: () => McpServer,
+  mcpServer: McpServer,
 ): Promise<Server> {
   if (httpServer) {
     throw new Error("HTTP server is already running");
@@ -67,27 +62,44 @@ export async function startHttpServer(
   app.post("/mcp", async (req, res) => {
     Logger.log("Received StreamableHTTP request");
     const sessionId = req.headers["mcp-session-id"] as string | undefined;
+    // Logger.log("Session ID:", sessionId);
+    // Logger.log("Headers:", req.headers);
+    // Logger.log("Body:", req.body);
+    // Logger.log("Is Initialize Request:", isInitializeRequest(req.body));
     let transport: StreamableHTTPServerTransport;
 
-    if (sessionId && sessions[sessionId]) {
+    if (sessionId && transports.streamable[sessionId]) {
       // Reuse existing transport
       Logger.log("Reusing existing StreamableHTTP transport for sessionId", sessionId);
-      transport = sessions[sessionId].transport as StreamableHTTPServerTransport;
+      transport = transports.streamable[sessionId];
     } else if (!sessionId && isInitializeRequest(req.body)) {
       Logger.log("New initialization request for StreamableHTTP sessionId", sessionId);
       transport = new StreamableHTTPServerTransport({
         sessionIdGenerator: () => randomUUID(),
-        onsessioninitialized: (newSessionId) => {
-          sessions[newSessionId] = { transport, server: mcpServer };
+        onsessioninitialized: (sessionId) => {
+          // Store the transport by session ID
+          transports.streamable[sessionId] = transport;
         },
       });
       transport.onclose = () => {
         if (transport.sessionId) {
-          delete sessions[transport.sessionId];
+          delete transports.streamable[transport.sessionId];
         }
       };
-      const mcpServer = createMcpServer();
-      await mcpServer.connect(transport);
+      // SDK 1.21+ throws if already connected to another transport. A single
+      // McpServer can only serve one transport at a time — this is a known
+      // architectural limitation (see multi-client test in server.test.ts).
+      try {
+        await mcpServer.connect(transport);
+      } catch (error) {
+        Logger.error("Failed to connect Streamable HTTP transport:", error);
+        res.status(500).json({
+          jsonrpc: "2.0",
+          error: { code: -32000, message: "Server transport conflict" },
+          id: null,
+        });
+        return;
+      }
     } else {
       // Invalid request
       Logger.log("Invalid request:", req.body);
@@ -104,14 +116,15 @@ export async function startHttpServer(
 
     let progressInterval: NodeJS.Timeout | null = null;
     const progressToken = req.body.params?._meta?.progressToken;
+    // Logger.log("Progress token:", progressToken);
     let progress = 0;
-    if (progressToken && sessionId && sessions[sessionId]) {
+    if (progressToken) {
       Logger.log(
         `Setting up progress notifications for token ${progressToken} on session ${sessionId}`,
       );
       progressInterval = setInterval(async () => {
         Logger.log("Sending progress notification", progress);
-        await sessions[sessionId].server.server.notification({
+        await mcpServer.server.notification({
           method: "notifications/progress",
           params: {
             progress,
@@ -134,7 +147,7 @@ export async function startHttpServer(
   // Handle GET requests for SSE streams (using built-in support from StreamableHTTP)
   const handleSessionRequest = async (req: Request, res: Response) => {
     const sessionId = req.headers["mcp-session-id"] as string | undefined;
-    if (!sessionId || !sessions[sessionId]) {
+    if (!sessionId || !transports.streamable[sessionId]) {
       res.status(400).send("Invalid or missing session ID");
       return;
     }
@@ -142,7 +155,7 @@ export async function startHttpServer(
     console.log(`Received session termination request for session ${sessionId}`);
 
     try {
-      const transport = sessions[sessionId].transport as StreamableHTTPServerTransport;
+      const transport = transports.streamable[sessionId];
       await transport.handleRequest(req, res);
     } catch (error) {
       console.error("Error handling session termination:", error);
@@ -165,23 +178,33 @@ export async function startHttpServer(
     Logger.log("/sse request headers:", req.headers);
     Logger.log("/sse request body:", req.body);
 
-    const mcpServer = createMcpServer();
-    sessions[transport.sessionId] = { transport, server: mcpServer };
+    transports.sse[transport.sessionId] = transport;
     res.on("close", () => {
-      delete sessions[transport.sessionId];
+      delete transports.sse[transport.sessionId];
     });
 
-    await mcpServer.connect(transport);
+    // SDK 1.21+ throws if already connected to another transport (e.g. a
+    // Streamable HTTP session). This is a known architectural limitation —
+    // a single McpServer instance can only serve one transport at a time.
+    try {
+      await mcpServer.connect(transport);
+    } catch (error) {
+      delete transports.sse[transport.sessionId];
+      Logger.error("Failed to connect SSE transport:", error);
+      if (!res.headersSent) {
+        res.status(500).send("Failed to establish SSE connection");
+      }
+    }
   });
 
   app.post("/messages", async (req, res) => {
     const sessionId = req.query.sessionId as string;
-    const session = sessions[sessionId];
-    if (session) {
+    const transport = transports.sse[sessionId];
+    if (transport) {
       Logger.log(`Received SSE message for sessionId ${sessionId}`);
       Logger.log("/messages request headers:", req.headers);
       Logger.log("/messages request body:", req.body);
-      await (session.transport as SSEServerTransport).handlePostMessage(req, res);
+      await transport.handlePostMessage(req, res);
     } else {
       res.status(400).send(`No transport found for sessionId ${sessionId}`);
       return;
@@ -204,20 +227,27 @@ export async function startHttpServer(
   });
 }
 
+async function closeTransports(
+  transports: Record<string, SSEServerTransport | StreamableHTTPServerTransport>,
+) {
+  for (const sessionId in transports) {
+    try {
+      await transports[sessionId]?.close();
+      delete transports[sessionId];
+    } catch (error) {
+      console.error(`Error closing transport for session ${sessionId}:`, error);
+    }
+  }
+}
+
 export async function stopHttpServer(): Promise<void> {
   if (!httpServer) {
     throw new Error("HTTP server is not running");
   }
 
-  // Close all sessions FIRST so connections drain
-  for (const sessionId in sessions) {
-    try {
-      await sessions[sessionId].transport.close();
-      delete sessions[sessionId];
-    } catch (error) {
-      console.error(`Error closing session ${sessionId}:`, error);
-    }
-  }
+  // Close all transports FIRST so connections drain
+  await closeTransports(transports.sse);
+  await closeTransports(transports.streamable);
 
   // Then close the HTTP server
   return new Promise((resolve, reject) => {

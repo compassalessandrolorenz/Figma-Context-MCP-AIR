@@ -24,4 +24,16 @@ export type { GetMetadataParams } from "./get-metadata-tool.js";
 export { getFigJamTool } from "./get-figjam-tool.js";
 
 // Phase 2 types
+
+// Phase 3 tools (Code Connect - Enterprise only)
+export { getCodeConnectSuggestionsTool } from "./get-code-connect-suggestions-tool.js";
+export { getCodeConnectMapTool } from "./get-code-connect-map-tool.js";
+export { sendCodeConnectMappingsTool } from "./send-code-connect-mappings-tool.js";
+export { addCodeConnectMapTool } from "./add-code-connect-map-tool.js";
+
+// Phase 3 types
+export type { GetCodeConnectSuggestionsParams } from "./get-code-connect-suggestions-tool.js";
+export type { GetCodeConnectMapParams } from "./get-code-connect-map-tool.js";
+export type { SendCodeConnectMappingsParams } from "./send-code-connect-mappings-tool.js";
+export type { AddCodeConnectMapParams } from "./add-code-connect-map-tool.js";
 export type { GetFigJamParams } from "./get-figjam-tool.js";

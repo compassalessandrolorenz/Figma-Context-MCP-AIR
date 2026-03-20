@@ -1,8 +1,16 @@
 import { execFile } from "child_process";
 import { promisify } from "util";
 import { Logger } from "./logger.js";
+import { FigmaAPIError, FigmaRateLimitError, FigmaNetworkError, FigmaAuthError } from "./errors.js";
 
 const execFileAsync = promisify(execFile);
+
+/**
+ * Sleep utility for async delays
+ */
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
 type RequestOptions = RequestInit & {
   /**
@@ -13,21 +21,97 @@ type RequestOptions = RequestInit & {
   headers?: Record<string, string>;
 };
 
+export interface FetchRetryConfig {
+  maxRetries?: number;
+  initialBackoff?: number;
+  maxBackoff?: number;
+}
+
 export async function fetchWithRetry<T extends { status?: number }>(
   url: string,
   options: RequestOptions = {},
+  config: FetchRetryConfig = {},
 ): Promise<T> {
-  try {
-    const response = await fetch(url, options);
+  const { maxRetries = 3, initialBackoff = 1000, maxBackoff = 10000 } = config;
+  let lastError: Error = new Error("Unknown error");
 
-    if (!response.ok) {
-      throw new Error(`Fetch failed with status ${response.status}: ${response.statusText}`);
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      const response = await fetch(url, options);
+
+      // Handle rate limiting with exponential backoff
+      if (response.status === 429) {
+        const retryAfterHeader = response.headers.get("Retry-After");
+        const retryAfter = retryAfterHeader ? parseInt(retryAfterHeader) : null;
+        const backoff = retryAfter
+          ? retryAfter * 1000
+          : Math.min(initialBackoff * Math.pow(2, attempt), maxBackoff);
+
+        if (attempt < maxRetries) {
+          Logger.log(
+            `[fetchWithRetry] Rate limited (429). Retrying after ${backoff}ms (attempt ${attempt + 1}/${maxRetries})`,
+          );
+          await sleep(backoff);
+          continue;
+        }
+
+        throw new FigmaRateLimitError("Rate limit exceeded", Math.ceil(backoff / 1000), "minute");
+      }
+
+      // Handle authentication errors
+      if (response.status === 401) {
+        throw new FigmaAuthError("Authentication failed: Invalid or expired token", "pat");
+      }
+
+      if (response.status === 403) {
+        const body = await response.text();
+        throw new FigmaAPIError("Access forbidden", 403, url, body);
+      }
+
+      // Handle other HTTP errors
+      if (!response.ok) {
+        const body = await response.text();
+        throw new FigmaAPIError(
+          `HTTP ${response.status}: ${response.statusText}`,
+          response.status,
+          url,
+          body,
+        );
+      }
+
+      return (await response.json()) as T;
+    } catch (fetchError: unknown) {
+      lastError = fetchError as Error;
+
+      // Don't retry on client errors (4xx except 429) or auth errors
+      if (
+        fetchError instanceof FigmaAPIError &&
+        fetchError.isClientError() &&
+        fetchError.statusCode !== 429
+      ) {
+        throw fetchError;
+      }
+
+      if (fetchError instanceof FigmaAuthError) {
+        throw fetchError;
+      }
+
+      // Exponential backoff for network errors
+      if (attempt < maxRetries) {
+        const backoff = Math.min(initialBackoff * Math.pow(2, attempt), maxBackoff);
+        Logger.log(
+          `[fetchWithRetry] Request failed. Retrying after ${backoff}ms (attempt ${attempt + 1}/${maxRetries})`,
+        );
+        await sleep(backoff);
+        continue;
+      }
     }
-    return (await response.json()) as T;
-  } catch (fetchError: unknown) {
-    const fetchMessage = fetchError instanceof Error ? fetchError.message : String(fetchError);
+  }
+
+  // All retries failed, try curl fallback
+  try {
     Logger.log(
-      `[fetchWithRetry] Initial fetch failed for ${url}: ${fetchMessage}. Likely a corporate proxy or SSL issue. Attempting curl fallback.`,
+      `[fetchWithRetry] All fetch attempts failed for ${url}. Attempting curl fallback for corporate proxy/SSL issues.`,
     );
 
     const curlHeaders = formatHeadersForCurl(options.headers);
@@ -74,11 +158,19 @@ export async function fetchWithRetry<T extends { status?: number }>(
     } catch (curlError: unknown) {
       const curlMessage = curlError instanceof Error ? curlError.message : String(curlError);
       Logger.error(`[fetchWithRetry] Curl fallback also failed for ${url}: ${curlMessage}`);
-      // Re-throw the original fetch error to give context about the initial failure
-      // or throw a new error that wraps both, depending on desired error reporting.
-      // For now, re-throwing the original as per the user example's spirit.
-      throw fetchError;
+
+      // Wrap in network error
+      throw new FigmaNetworkError(
+        `Network request failed after ${maxRetries} retries and curl fallback: ${lastError.message}`,
+        lastError,
+      );
     }
+  } catch {
+    // Curl fallback setup failed, throw the last fetch error
+    throw new FigmaNetworkError(
+      `Network request failed after ${maxRetries} retries: ${lastError.message}`,
+      lastError,
+    );
   }
 }
 
