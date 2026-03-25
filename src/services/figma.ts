@@ -311,23 +311,88 @@ export class FigmaService {
 
   /**
    * Get screenshot as base64 for a specific node
+   * Returns raw base64 string (without data URI prefix)
+   *
+   * @throws Error if node cannot be rendered or download fails
    */
   async getScreenshotBase64(fileKey: string, nodeId: string): Promise<string> {
     Logger.log(`Fetching screenshot for node ${nodeId} from file ${fileKey}`);
+
+    // Step 1: Get render URL from Figma API
     const urls = await this.getNodeRenderUrls(fileKey, [nodeId], "png", { pngScale: 2 });
     const url = urls[nodeId];
 
     if (!url) {
-      throw new Error(`No render URL available for node ${nodeId}`);
+      throw new Error(
+        `No render URL available for node ${nodeId}. The node may not exist, may not be visible, or may not be renderable.`,
+      );
     }
 
-    const response = await fetch(url);
-    if (!response.ok) {
-      throw new Error(`Failed to download screenshot: ${response.statusText}`);
-    }
+    Logger.log(`Downloading screenshot from Figma CDN: ${url.substring(0, 50)}...`);
 
-    const buffer = await response.arrayBuffer();
-    return Buffer.from(buffer).toString("base64");
+    // Step 2: Fetch with timeout protection (30 seconds)
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000);
+
+    try {
+      const response = await fetch(url, { signal: controller.signal });
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        throw new Error(
+          `Failed to download screenshot: HTTP ${response.status} ${response.statusText}`,
+        );
+      }
+
+      // Step 3: Validate content type
+      const contentType = response.headers.get("content-type");
+      if (contentType && !contentType.startsWith("image/")) {
+        throw new Error(
+          `Invalid content type received: ${contentType}. Expected image data.`,
+        );
+      }
+
+      // Step 4: Convert to buffer and validate
+      const buffer = await response.arrayBuffer();
+
+      if (buffer.byteLength === 0) {
+        throw new Error("Received empty image data from Figma CDN");
+      }
+
+      // Log size for debugging and warn about large images
+      const sizeKB = (buffer.byteLength / 1024).toFixed(2);
+      Logger.log(`Screenshot downloaded successfully: ${sizeKB} KB`);
+
+      if (buffer.byteLength > 10 * 1024 * 1024) {
+        Logger.log(
+          `Warning: Large screenshot (${sizeKB} KB) may cause performance issues or timeouts`,
+        );
+      }
+
+      // Step 5: Convert to base64 and ensure it's clean (no whitespace/newlines)
+      const base64 = Buffer.from(buffer).toString("base64").replace(/\s/g, "");
+
+      if (!base64 || base64.length === 0) {
+        throw new Error("Failed to encode image as base64");
+      }
+
+      // Validate base64 format (should only contain valid base64 characters)
+      if (!/^[A-Za-z0-9+/]*={0,2}$/.test(base64)) {
+        throw new Error("Generated base64 string contains invalid characters");
+      }
+
+      return base64;
+    } catch (error) {
+      clearTimeout(timeoutId);
+
+      if (error instanceof Error && error.name === "AbortError") {
+        throw new Error(
+          "Screenshot download timed out after 30 seconds. The image may be too large or the CDN is experiencing issues.",
+        );
+      }
+
+      throw error;
+    }
   }
 
   /**
