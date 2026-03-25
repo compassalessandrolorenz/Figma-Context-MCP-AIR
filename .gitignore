@@ -40,3 +40,6 @@ Thumbs.db
 
 # mcp-publisher CLI tool files
 .mcpregistry*
+
+# AI Cockpit local configuration
+.aicockpit
