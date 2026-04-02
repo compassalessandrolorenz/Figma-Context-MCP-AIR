@@ -1,6 +1,6 @@
 {
   "name": "figma-context-mcp-air",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "mcpName": "io.github.compassalessandrolorenz/Figma-Context-MCP-AIR",
   "description": "Give your AI coding agent access to Figma design data. 9 tools covering design context, variables, screenshots, metadata, FigJam, and more.",
   "type": "module",
