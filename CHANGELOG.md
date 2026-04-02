@@ -1,5 +1,13 @@
 # figma-developer-mcp
 
+## [2.0.2](https://github.com/compassalessandrolorenz/Figma-Context-MCP-AIR/compare/v2.0.1...v2.0.2) (2026-04-02)
+
+
+### Bug Fixes
+
+* shorten server.json description to meet MCP Registry 100-char limit ([1d222bf](https://github.com/compassalessandrolorenz/Figma-Context-MCP-AIR/commit/1d222bf00ea5b33c858d1994485312650d79a51f))
+* shorten server.json description to meet MCP Registry 100-char limit ([d73e8c2](https://github.com/compassalessandrolorenz/Figma-Context-MCP-AIR/commit/d73e8c205ef704d71fa68b0e97666dbf6da59929))
+
 ## [2.0.1](https://github.com/compassalessandrolorenz/Figma-Context-MCP-AIR/compare/v2.0.0...v2.0.1) (2026-04-02)
 
 
