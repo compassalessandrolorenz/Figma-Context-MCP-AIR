@@ -1,5 +1,46 @@
 # figma-developer-mcp
 
+## [2.0.0](https://github.com/compassalessandrolorenz/Figma-Context-MCP-AIR/compare/v1.0.0...v2.0.0) (2026-04-02)
+
+
+### ⚠ BREAKING CHANGES
+
+* getServerConfig() no longer takes an isStdioMode parameter. It now detects stdio mode internally and returns it as part of ServerConfig.
+
+### Features
+
+* add --image-dir config for image download path control ([#297](https://github.com/compassalessandrolorenz/Figma-Context-MCP-AIR/issues/297)) ([0417766](https://github.com/compassalessandrolorenz/Figma-Context-MCP-AIR/commit/0417766eb5fc1e0b76e55da497961f9aee2f62f7))
+* Add new Figma MCP tools from alternative-development branch ([50220b2](https://github.com/compassalessandrolorenz/Figma-Context-MCP-AIR/commit/50220b2791251086c391a456b920697f53d4ec3b))
+* Enhance screenshot tool with local path and filename options ([37b8eab](https://github.com/compassalessandrolorenz/Figma-Context-MCP-AIR/commit/37b8eab4752067231b588a9bf516d67e3cc1c882))
+* Extracting global variables ([bb52df2](https://github.com/compassalessandrolorenz/Figma-Context-MCP-AIR/commit/bb52df2835a7d34b588ab553e8807ff4c1a3d356))
+* Extracting global variables ([03143b8](https://github.com/compassalessandrolorenz/Figma-Context-MCP-AIR/commit/03143b834385176b474bed22660120dd36a86970))
+* Include component and component set names to help LLMs find pre-existing components in code ([#122](https://github.com/compassalessandrolorenz/Figma-Context-MCP-AIR/issues/122)) ([60c663e](https://github.com/compassalessandrolorenz/Figma-Context-MCP-AIR/commit/60c663e6a83886b03eb2cde7c60433439e2cedd0))
+* initial public release as figma-context-mcp-air with 9 MCP tools ([3351739](https://github.com/compassalessandrolorenz/Figma-Context-MCP-AIR/commit/33517395bd4a01ceee20044bebcf772b302a043c))
+* replace yargs with cleye for CLI flag parsing ([#285](https://github.com/compassalessandrolorenz/Figma-Context-MCP-AIR/issues/285)) ([0092ee7](https://github.com/compassalessandrolorenz/Figma-Context-MCP-AIR/commit/0092ee789fce01b9ef1dab5e8f32c52e71107dbb))
+* **security:** add input validation to download images tool ([#207](https://github.com/compassalessandrolorenz/Figma-Context-MCP-AIR/issues/207)) ([651974e](https://github.com/compassalessandrolorenz/Figma-Context-MCP-AIR/commit/651974e6f31a3b60b863dab12e69029c710dd1c0))
+* **security:** add path sanitization to prevent directory traversal ([#206](https://github.com/compassalessandrolorenz/Figma-Context-MCP-AIR/issues/206)) ([5a18eef](https://github.com/compassalessandrolorenz/Figma-Context-MCP-AIR/commit/5a18eef889b0449894e835f71b15786e4e36dd10))
+* support gifRef for downloading animated GIF embeds ([#286](https://github.com/compassalessandrolorenz/Figma-Context-MCP-AIR/issues/286)) ([f1ec913](https://github.com/compassalessandrolorenz/Figma-Context-MCP-AIR/commit/f1ec9133c31a351b55651126c20ea2f842c0a9ee))
+* Update .gitignore to include mcp-publisher CLI tool files ([1c4fae2](https://github.com/compassalessandrolorenz/Figma-Context-MCP-AIR/commit/1c4fae26147693723549a4794b2774cb3cd9ca78))
+
+
+### Bug Fixes
+
+* Cannot find module '~/transformers/layout' ([7432d6c](https://github.com/compassalessandrolorenz/Figma-Context-MCP-AIR/commit/7432d6ca28796327aec9f4fdd4b2948b95b49a08))
+* Cannot find module '~/transformers/layout' ([82a52f7](https://github.com/compassalessandrolorenz/Figma-Context-MCP-AIR/commit/82a52f7e4b349268995633f229e03ee034cce8b5))
+* enhance fetchWithRetry to handle error statuses in response body ([803a479](https://github.com/compassalessandrolorenz/Figma-Context-MCP-AIR/commit/803a479c2a3f0e8b8636f498728b5aaca2e30580))
+* Fix bug where MCP cannot be invoked by cursor 0.45.11 ([dbea364](https://github.com/compassalessandrolorenz/Figma-Context-MCP-AIR/commit/dbea36451cbf68f6d1dd814fed01743a1fdd27f4))
+* handle drive root paths in image directory security check ([#301](https://github.com/compassalessandrolorenz/Figma-Context-MCP-AIR/issues/301)) ([9f32616](https://github.com/compassalessandrolorenz/Figma-Context-MCP-AIR/commit/9f32616caa29b1dbdd5c5a9dcfafa3dd717070a3))
+* Make sure LLM provides a filename extension when calling download_figma_images ([00bad7d](https://github.com/compassalessandrolorenz/Figma-Context-MCP-AIR/commit/00bad7dae48a6d0cc55d78560cc691a39271f151))
+* README.zh-tw typo ([#236](https://github.com/compassalessandrolorenz/Figma-Context-MCP-AIR/issues/236)) ([c65c25c](https://github.com/compassalessandrolorenz/Figma-Context-MCP-AIR/commit/c65c25c16f19c7f05c05f976b26cc5fbd2bcb19a))
+* Remove empty keys from simplified design output ([#106](https://github.com/compassalessandrolorenz/Figma-Context-MCP-AIR/issues/106)) ([4237a53](https://github.com/compassalessandrolorenz/Figma-Context-MCP-AIR/commit/4237a5363f696dcf7abe046940180b6861bdcf22))
+* remove inline release-type so release-please reads config file ([a03cd68](https://github.com/compassalessandrolorenz/Figma-Context-MCP-AIR/commit/a03cd68826da1c1596273a223a612eb919832397))
+* replace sharp dependency with js-native jimp for image manipulation ([#289](https://github.com/compassalessandrolorenz/Figma-Context-MCP-AIR/issues/289)) ([62b9f94](https://github.com/compassalessandrolorenz/Figma-Context-MCP-AIR/commit/62b9f94b1607dd08daeaa90e8ace0a896fe6eb50))
+* Replaced the NODE_ENV setting with cross-env to improve cross-platform compatibility. ([#19](https://github.com/compassalessandrolorenz/Figma-Context-MCP-AIR/issues/19)) ([a0eeed5](https://github.com/compassalessandrolorenz/Figma-Context-MCP-AIR/commit/a0eeed588002915df1489346880372a5896b3fdb))
+* skip jimp processing for SVGs and prevent image-fill collapse ([#298](https://github.com/compassalessandrolorenz/Figma-Context-MCP-AIR/issues/298)) ([a4a4b13](https://github.com/compassalessandrolorenz/Figma-Context-MCP-AIR/commit/a4a4b13ec7cae5d603022b1c8719cc717749195b))
+* update Node ID regex to support additional formats in download i… ([#227](https://github.com/compassalessandrolorenz/Figma-Context-MCP-AIR/issues/227)) ([68fbc87](https://github.com/compassalessandrolorenz/Figma-Context-MCP-AIR/commit/68fbc87645d25c57252d4d9bec5f43ee4238b09f))
+* upgrade MCP SDK to 1.27.1 and modernize tool registration ([#282](https://github.com/compassalessandrolorenz/Figma-Context-MCP-AIR/issues/282)) ([4153e5f](https://github.com/compassalessandrolorenz/Figma-Context-MCP-AIR/commit/4153e5f857aa708ee9ee10156e553c1289f03cf7))
+* use Node 24 in release workflow for npm OIDC support ([11ba7c6](https://github.com/compassalessandrolorenz/Figma-Context-MCP-AIR/commit/11ba7c6a2e22910c483592ba7cdc1966fcdc9166))
+
 ## [0.7.1](https://github.com/GLips/Figma-Context-MCP/compare/v0.7.0...v0.7.1) (2026-03-20)
 
 
