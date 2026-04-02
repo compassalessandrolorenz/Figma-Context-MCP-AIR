@@ -1,5 +1,12 @@
 # figma-developer-mcp
 
+## [2.0.1](https://github.com/compassalessandrolorenz/Figma-Context-MCP-AIR/compare/v2.0.0...v2.0.1) (2026-04-02)
+
+
+### Bug Fixes
+
+* add NODE_AUTH_TOKEN to npm publish step in release workflow ([2a67249](https://github.com/compassalessandrolorenz/Figma-Context-MCP-AIR/commit/2a6724918bd034bec30a0b43cdfb194d52d472f0))
+
 ## [2.0.0](https://github.com/compassalessandrolorenz/Figma-Context-MCP-AIR/compare/v1.0.0...v2.0.0) (2026-04-02)
 
 
